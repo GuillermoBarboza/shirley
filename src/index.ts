@@ -21,11 +21,7 @@ app.get("/", (req: Request, res: Response) => {
 // Routes
 app.use("/artworks", routes);
 
-app.use(
-  cors({
-    origin: "http://localhost:3000", // Replace with the allowed origin(s)
-  })
-);
+app.use(cors());
 
 // MongoDB setup
 const mongoURI = process.env.MONGO_URI;
