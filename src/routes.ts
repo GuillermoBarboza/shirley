@@ -28,20 +28,20 @@ router.post("/create", async (req: Request, res: Response) => {
       description,
       price,
       size,
-      collection,
+      coleccion,
     } = req.body;
 
     const artwork = new ArtworkModel({
       title,
       artist,
       styles,
-      available,
       year,
       url,
+      available,
       description,
       price,
       size,
-      collection,
+      coleccion,
     });
 
     const createdArtwork = await artwork.save();
@@ -66,7 +66,7 @@ router.put("/:id", async (req: Request, res: Response) => {
       description,
       price,
       size,
-      collection,
+      coleccion,
     } = req.body;
 
     const updatedArtwork = await ArtworkModel.findByIdAndUpdate(
@@ -81,7 +81,7 @@ router.put("/:id", async (req: Request, res: Response) => {
         price,
         size,
         description,
-        collection,
+        coleccion,
       },
       { new: true }
     );

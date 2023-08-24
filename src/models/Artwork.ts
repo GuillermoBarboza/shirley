@@ -9,21 +9,21 @@ interface Artwork {
   price: number;
   year: number;
   available: boolean;
-  collection: string;
+  coleccion: string;
   url: string;
 }
 
 const artworkSchema = new Schema<Artwork>({
   title: { type: String, required: false },
+  description: { type: String, required: false },
   artist: { type: String, required: false, default: "Shirley Madero" },
   styles: { type: [String], required: false },
   size: { type: String, required: false },
-  collection: { type: String, required: false },
-  year: { type: Number, required: false },
   price: { type: Number, required: false },
-  url: { type: String, required: true },
+  year: { type: Number, required: false },
   available: { type: Boolean, required: false },
-  description: { type: String, required: false },
+  coleccion: { type: String, required: false },
+  url: { type: String, required: true },
 });
 
 const ArtworkModel = mongoose.model<Artwork & Document>(
