@@ -4,10 +4,10 @@
       "module": "commonjs",
       "outDir": "dist",
       "sourceMap": true,
-      "rootDir": "src",
+      "rootDir": "api",
       "esModuleInterop": true,
       "resolveJsonModule": true
     },
-    "include": ["src/**/*.ts"],
+    "include": ["api/**/*.ts"],
     "exclude": ["node_modules"]
   }
