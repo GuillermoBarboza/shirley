@@ -2,9 +2,9 @@
   "name": "shirley",
   "version": "1.0.0",
   "description": "shirley back end",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "ts-node api/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
