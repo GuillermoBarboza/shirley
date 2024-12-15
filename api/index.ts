@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import routes from "./routes";
+import loginRoutes from "./loginRoutes";
+import contactRoutes from "./contactRoutes";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -15,26 +17,28 @@ app.use(cors());
 
 // Routes
 app.get("/api", (req: Request, res: Response) => {
-  res.send("Hello, world!");
+    res.send("Hello, world!");
 });
 
 // Routes
 app.use("/api/artworks", routes);
 
-app.use(cors());
+app.use("/api/auth", loginRoutes);
+
+app.use("/api/contact-info", contactRoutes);
 
 // MongoDB setup
 const mongoURI = process.env.MONGO_URI;
 
 mongoose
-  .connect(mongoURI)
-  .then(() => {
-    console.log("Connected to MongoDB");
-    // Start the server after successfully connecting to MongoDB
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+    .connect(mongoURI)
+    .then(() => {
+        console.log("Connected to MongoDB");
+        // Start the server after successfully connecting to MongoDB
+        app.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
+        });
+    })
+    .catch((error) => {
+        console.error("Error connecting to MongoDB:", error);
     });
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
-  });
