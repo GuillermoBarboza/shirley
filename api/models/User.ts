@@ -5,6 +5,8 @@ interface IUser extends Document {
     username: string;
     password: string;
     role: string;
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
 }
 
 const UserSchema: Schema = new Schema({
@@ -17,6 +19,8 @@ const UserSchema: Schema = new Schema({
         enum: ["admin", "user"],
         default: "user",
     },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
 });
 
 const UserModel = mongoose.model<IUser>("User", UserSchema);

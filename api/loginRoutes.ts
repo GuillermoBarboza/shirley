@@ -2,9 +2,13 @@ import express, { Request, Response } from "express";
 import { IUserRequest } from "../types/express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import UserModel from "./models/User"; // Adjust the path based on your folder structure
 import authMiddleware from "./middleware/authMiddleware";
 import roleMiddleware from "./middleware/roleMiddleware";
+
+
+import { sendEmail, generatePasswordResetEmail } from "./utils/email"
 
 const router = express.Router();
 
@@ -44,7 +48,6 @@ router.post("/users/register", async (req: Request, res: Response) => {
 router.post("/users/login", async (req: IUserRequest, res: Response) => {
     try {
         const { emailOrUsername, password } = req.body;
-        console.log("emailOrUsername", emailOrUsername);
         const user = await UserModel.findOne({
             $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
         });
@@ -65,6 +68,122 @@ router.post("/users/login", async (req: IUserRequest, res: Response) => {
     } catch (error) {
         console.error("Error logging in user:", error);
         res.status(500).json({ message: "Error logging in user" });
+    }
+});
+
+// POST /users/forgot-password
+router.post("/users/forgot-password", async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const baseUrl = "http://localhost:3000"; // Change this to your frontend URL
+
+        const user = await UserModel.findOne({ email });
+
+        if (!user) {
+            // Always show success even if email doesn't exist (security best practice)
+            return res.json({
+                message:
+                    "If an account exists with this email, you'll receive password reset instructions shortly.",
+            });
+        }
+
+        // Generate secure token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+
+        // Hash token before storing
+        const hashedToken = await bcrypt.hash(resetToken, 10);
+
+        // Store token with expiry (1 hour from now)
+        user.resetPasswordToken = hashedToken;
+        user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+        await user.save();
+
+        // Create reset link with the unhashed token
+        const resetLink = `${baseUrl}/reset-password?token=${resetToken}&id=${user._id}`;
+
+        // Send email with reset link
+        const emailSent = await sendEmail({
+            to: user.email,
+            subject: "Password Reset Request",
+            html: generatePasswordResetEmail(user.username || user.email, resetLink)
+        });
+
+        if (!emailSent) {
+            return res.status(500).json({ message: "Error sending password reset email" });
+        }
+
+        return res.json({
+            message: "If an account exists with this email, you'll receive password reset instructions shortly."
+        });
+
+    } catch (error) {
+        console.error("Error sending password reset email:", error);
+        res.status(500).json({ message: "Error sending password reset email" });
+    }
+}
+
+);
+
+// POST /users/reset-password
+router.post("/users/reset-password", async (req: Request, res: Response) => {
+    try {
+        const { userId, token, newPassword } = req.body;
+        
+        const user = await UserModel.findById(userId);
+        
+        if (!user || 
+            !user.resetPasswordToken || 
+            !user.resetPasswordExpires || 
+            user.resetPasswordExpires < new Date()) {
+            return res.status(400).json({ message: "Password reset token is invalid or has expired" });
+        }
+        
+        // Verify token
+        const isValid = await bcrypt.compare(token, user.resetPasswordToken);
+        
+        if (!isValid) {
+            return res.status(400).json({ message: "Password reset token is invalid or has expired" });
+        }
+        
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        // Update user password and clear reset token fields
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        
+        return res.json({ message: "Password has been reset successfully" });
+        
+    } catch (error) {
+        console.error("Error resetting password:", error);
+        res.status(500).json({ message: "Error resetting password" });
+    }
+});
+
+// POST /users/validate-reset-token
+router.post("/users/validate-reset-token", async (req: Request, res: Response) => {
+    try {
+        const { userId, token } = req.body;
+        
+        const user = await UserModel.findById(userId);
+        
+        if (!user || 
+            !user.resetPasswordToken || 
+            !user.resetPasswordExpires || 
+            user.resetPasswordExpires < new Date()) {
+            return res.json({ valid: false });
+        }
+        
+        // Verify token
+        const isValid = await bcrypt.compare(token, user.resetPasswordToken);
+        
+        return res.json({ valid: isValid });
+        
+    } catch (error) {
+        console.error("Error validating token:", error);
+        return res.json({ valid: false });
     }
 });
 
