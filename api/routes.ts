@@ -19,9 +19,10 @@ router.get("/", async (req: Request, res: Response) => {
 //get latest
 router.get("/latest", async (req: Request, res: Response) => {
     try {
-        const artworks = await ArtworkModel.find()
-            .sort({ createdAt: -1 })
-            .limit(10);
+        // Sort by _id, not createdAt: the schema never enabled timestamps, so
+        // createdAt does not exist on any document and sorting by it is a no-op.
+        // ObjectIds embed a creation timestamp, so this is genuinely newest-first.
+        const artworks = await ArtworkModel.find().sort({ _id: -1 }).limit(10);
         res.json(artworks);
     } catch (error) {
         console.error("Error fetching artworks:", error);
@@ -39,6 +40,7 @@ router.post("/create", authMiddleware, async (req: Request, res: Response) => {
             styles,
             year,
             url,
+            thumbUrl,
             available,
             description,
             price,
@@ -52,6 +54,7 @@ router.post("/create", authMiddleware, async (req: Request, res: Response) => {
             styles,
             year,
             url,
+            thumbUrl,
             available,
             description,
             price,
@@ -77,6 +80,7 @@ router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
             styles,
             year,
             url,
+            thumbUrl,
             available,
             description,
             price,
@@ -92,6 +96,7 @@ router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
                 styles,
                 year,
                 url,
+                thumbUrl,
                 available,
                 price,
                 size,

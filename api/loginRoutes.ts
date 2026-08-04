@@ -22,7 +22,7 @@ router.get(
 );
 
 // POST /users/register
-router.post("/users/register", async (req: Request, res: Response) => {
+router.post("/users/register", authMiddleware, roleMiddleware("admin"), async (req: Request, res: Response) => {
     try {
         const { email, password, username, role } = req.body;
 
