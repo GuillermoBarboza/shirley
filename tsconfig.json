@@ -1,13 +1,14 @@
 {
     "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
-      "outDir": "dist",
-      "sourceMap": true,
-      "rootDir": "api",
-      "esModuleInterop": true,
-      "resolveJsonModule": true
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "dist",
+        "sourceMap": true,
+        "rootDir": "api",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "typeRoots": ["./node_modules/@types", "types/express.d.ts"]
     },
-    "include": ["api/**/*.ts"],
+    "include": ["api/**/*.ts", "types/express.d.ts"],
     "exclude": ["node_modules"]
-  }
+}

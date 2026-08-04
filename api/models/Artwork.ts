@@ -11,6 +11,7 @@ interface Artwork {
   available: boolean;
   coleccion: string;
   url: string;
+  thumbUrl?: string;
 }
 
 const artworkSchema = new Schema<Artwork>({
@@ -24,6 +25,9 @@ const artworkSchema = new Schema<Artwork>({
   available: { type: Boolean, required: false },
   coleccion: { type: String, required: false },
   url: { type: String, required: true },
+  // Resized copy used by grids and the recent strip. Optional so documents
+  // created before the thumbnail pipeline stay valid; consumers fall back to url.
+  thumbUrl: { type: String, required: false },
 });
 
 const ArtworkModel = mongoose.model<Artwork & Document>(

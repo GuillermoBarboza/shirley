@@ -1,118 +1,138 @@
 import express, { Request, Response } from "express";
 import ArtworkModel from "./models/Artwork";
+import authMiddleware from "./middleware/authMiddleware";
 
 const router = express.Router();
 
 // GET /artworks
 router.get("/", async (req: Request, res: Response) => {
-  try {
-    const artworks = await ArtworkModel.find();
-    console.log(artworks);
-    res.json(artworks);
-  } catch (error) {
-    console.error("Error fetching artworks:", error);
-    res.status(500).json({ message: "Error fetching artworks" });
-  }
+    try {
+        const artworks = await ArtworkModel.find();
+        //console.log(artworks);
+        res.json(artworks);
+    } catch (error) {
+        console.error("Error fetching artworks:", error);
+        res.status(500).json({ message: "Error fetching artworks" });
+    }
+});
+
+//get latest
+router.get("/latest", async (req: Request, res: Response) => {
+    try {
+        // Sort by _id, not createdAt: the schema never enabled timestamps, so
+        // createdAt does not exist on any document and sorting by it is a no-op.
+        // ObjectIds embed a creation timestamp, so this is genuinely newest-first.
+        const artworks = await ArtworkModel.find().sort({ _id: -1 }).limit(10);
+        res.json(artworks);
+    } catch (error) {
+        console.error("Error fetching artworks:", error);
+        res.status(500).json({ message: "Error fetching artworks" });
+    }
 });
 
 // POST /artworks/create
-router.post("/create", async (req: Request, res: Response) => {
-  try {
-    const {
-      title,
-      artist,
-      styles,
-      year,
-      url,
-      available,
-      description,
-      price,
-      size,
-      coleccion,
-    } = req.body;
+router.post("/create", authMiddleware, async (req: Request, res: Response) => {
+    console.log("req.body", req.body);
+    try {
+        const {
+            title,
+            artist,
+            styles,
+            year,
+            url,
+            thumbUrl,
+            available,
+            description,
+            price,
+            size,
+            coleccion,
+        } = req.body;
 
-    const artwork = new ArtworkModel({
-      title,
-      artist,
-      styles,
-      year,
-      url,
-      available,
-      description,
-      price,
-      size,
-      coleccion,
-    });
+        const artwork = new ArtworkModel({
+            title,
+            artist,
+            styles,
+            year,
+            url,
+            thumbUrl,
+            available,
+            description,
+            price,
+            size,
+            coleccion,
+        });
 
-    const createdArtwork = await artwork.save();
-    res.status(201).json(createdArtwork);
-  } catch (error) {
-    console.error("Error creating artwork:", error);
-    res.status(500).json({ message: "Error creating artwork" });
-  }
+        const createdArtwork = await artwork.save();
+        res.status(201).json(createdArtwork);
+    } catch (error) {
+        console.error("Error creating artwork:", error);
+        res.status(500).json({ message: "Error creating artwork" });
+    }
 });
 
 // PUT /artwork/:id
-router.put("/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const {
-      title,
-      artist,
-      styles,
-      year,
-      url,
-      available,
-      description,
-      price,
-      size,
-      coleccion,
-    } = req.body;
+router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const {
+            title,
+            artist,
+            styles,
+            year,
+            url,
+            thumbUrl,
+            available,
+            description,
+            price,
+            size,
+            coleccion,
+        } = req.body;
 
-    const updatedArtwork = await ArtworkModel.findByIdAndUpdate(
-      id,
-      {
-        title,
-        artist,
-        styles,
-        year,
-        url,
-        available,
-        price,
-        size,
-        description,
-        coleccion,
-      },
-      { new: true }
-    );
+        const updatedArtwork = await ArtworkModel.findByIdAndUpdate(
+            id,
+            {
+                title,
+                artist,
+                styles,
+                year,
+                url,
+                thumbUrl,
+                available,
+                price,
+                size,
+                description,
+                coleccion,
+            },
+            { new: true }
+        );
 
-    if (!updatedArtwork) {
-      return res.status(404).json({ message: "Artwork not found" });
+        if (!updatedArtwork) {
+            return res.status(404).json({ message: "Artwork not found" });
+        }
+
+        res.json(updatedArtwork);
+    } catch (error) {
+        console.error("Error updating artwork:", error);
+        res.status(500).json({ message: "Error updating artwork" });
     }
-
-    res.json(updatedArtwork);
-  } catch (error) {
-    console.error("Error updating artwork:", error);
-    res.status(500).json({ message: "Error updating artwork" });
-  }
 });
 
 // DELETE /artwork/:id
-router.delete("/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+router.delete("/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
 
-    const deletedArtwork = await ArtworkModel.findByIdAndDelete(id);
+        const deletedArtwork = await ArtworkModel.findByIdAndDelete(id);
 
-    if (!deletedArtwork) {
-      return res.status(404).json({ message: "Artwork not found" });
+        if (!deletedArtwork) {
+            return res.status(404).json({ message: "Artwork not found" });
+        }
+
+        res.json({ message: "Artwork deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting artwork:", error);
+        res.status(500).json({ message: "Error deleting artwork" });
     }
-
-    res.json({ message: "Artwork deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting artwork:", error);
-    res.status(500).json({ message: "Error deleting artwork" });
-  }
 });
 
 export default router;
