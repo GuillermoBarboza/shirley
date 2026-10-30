@@ -9,7 +9,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const port = 3009;
+// Honour PORT so the runner scripts (and any host that assigns one) work;
+// 3009 stays the local default the frontends' .env files point at.
+const port = Number(process.env.PORT) || 3009;
 
 // Middleware
 app.use(express.json());
