@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import routes from "./routes";
 import loginRoutes from "./loginRoutes";
 import contactRoutes from "./contactRoutes";
+import experiencesRoutes from "./experiencesRoutes";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -28,6 +29,8 @@ app.use("/api/artworks", routes);
 app.use("/api/auth", loginRoutes);
 
 app.use("/api/contact-info", contactRoutes);
+
+app.use("/api/experiences", experiencesRoutes);
 
 // MongoDB setup
 const mongoURI = process.env.MONGO_URI;
