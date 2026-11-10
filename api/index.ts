@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
-import routes from "./routes";
-import loginRoutes from "./loginRoutes";
-import contactRoutes from "./contactRoutes";
-import experiencesRoutes from "./experiencesRoutes";
+import routes from "../src/routes";
+import loginRoutes from "../src/loginRoutes";
+import contactRoutes from "../src/contactRoutes";
+import experiencesRoutes from "../src/experiencesRoutes";
 import cors from "cors";
 import dotenv from "dotenv";
 
