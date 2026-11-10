@@ -15,16 +15,28 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
-// PUT /api/contact-info
+// PUT /api/contact-info — updates only the fields sent, so toggling a site
+// switch never touches the phone number and vice versa.
 router.put("/", authMiddleware, async (req: Request, res: Response) => {
-    const { phoneNumber } = req.body;
+    const { phoneNumber, wallViewEnabled } = req.body;
+
+    if (phoneNumber !== undefined && typeof phoneNumber !== "string") {
+        return res.status(400).json({ message: "Número de contacto inválido." });
+    }
+    if (wallViewEnabled !== undefined && typeof wallViewEnabled !== "boolean") {
+        return res.status(400).json({ message: "Valor inválido para “Ver en tu pared”." });
+    }
 
     try {
         let contactInfo = await ContactInfo.findOne();
         if (!contactInfo) {
-            contactInfo = new ContactInfo({ phoneNumber });
+            if (!phoneNumber) {
+                return res.status(400).json({ message: "Primero cargá un número de contacto." });
+            }
+            contactInfo = new ContactInfo({ phoneNumber, wallViewEnabled });
         } else {
-            contactInfo.phoneNumber = phoneNumber;
+            if (phoneNumber !== undefined) contactInfo.phoneNumber = phoneNumber;
+            if (wallViewEnabled !== undefined) contactInfo.wallViewEnabled = wallViewEnabled;
         }
         await contactInfo.save();
         res.status(200).json(contactInfo);

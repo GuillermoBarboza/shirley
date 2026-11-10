@@ -75,7 +75,10 @@ router.post("/users/login", async (req: IUserRequest, res: Response) => {
 router.post("/users/forgot-password", async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
-        const baseUrl = "http://localhost:3000"; // Change this to your frontend URL
+        // Where the reset link sends the user. Must be the admin app's public
+        // origin in production — set BASE_URL there. Trimmed because the value
+        // is easy to save with trailing whitespace, which would corrupt the link.
+        const baseUrl = (process.env.BASE_URL || "http://localhost:3000").trim();
 
         const user = await UserModel.findOne({ email });
 
@@ -194,7 +197,10 @@ router.get(
     roleMiddleware("admin"),
     async (req: Request, res: Response) => {
         try {
-            const users = await UserModel.find();
+            // Never ship password hashes or live reset tokens to a client.
+            const users = await UserModel.find().select(
+                "-password -resetPasswordToken -resetPasswordExpires"
+            );
             res.json(users);
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -210,7 +216,9 @@ router.get(
     roleMiddleware("admin"),
     async (req: Request, res: Response) => {
         try {
-            const user = await UserModel.findById(req.params.id);
+            const user = await UserModel.findById(req.params.id).select(
+                "-password -resetPasswordToken -resetPasswordExpires"
+            );
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }

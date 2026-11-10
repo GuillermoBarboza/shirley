@@ -4,11 +4,11 @@
         "module": "commonjs",
         "outDir": "dist",
         "sourceMap": true,
-        "rootDir": "api",
+        "rootDir": ".",
         "esModuleInterop": true,
         "resolveJsonModule": true,
         "typeRoots": ["./node_modules/@types", "types/express.d.ts"]
     },
-    "include": ["api/**/*.ts", "types/express.d.ts"],
+    "include": ["api/**/*.ts", "src/**/*.ts", "types/express.d.ts"],
     "exclude": ["node_modules"]
 }
